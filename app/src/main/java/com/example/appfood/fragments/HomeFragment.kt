@@ -1,5 +1,6 @@
 package com.example.appfood.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,10 +12,18 @@ import com.bumptech.glide.Glide
 import com.example.appfood.databinding.FragmentHomeBinding
 import com.example.appfood.db.viewModel.HomeViewModel
 import com.example.appfood.pojo.Meal
+import com.example.appfood.view.MealActivity
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var homeMvvm: HomeViewModel
+    private lateinit var randomMeal: Meal
+
+    companion object {
+        const val MEAL_ID = "com.example.appfood.fragments.idMeal"
+        const val MEAL_NAME = "com.example.appfood.fragments.nameMeal"
+        const val MEAL_THUMB = "com.example.appfood.fragments.thumbMeal"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,18 +43,29 @@ class HomeFragment : Fragment() {
 
         homeMvvm.getRandomMeal()
         observeRandomMeal()
+        onRandomMealClick()
 
     }
 
-    private fun observeRandomMeal() {
-        homeMvvm.observeRandomMealLiveData().observe(viewLifecycleOwner,object : Observer<Meal>{
-            override fun onChanged(t: Meal?) {
-                Glide.with(this@HomeFragment)
-                    .load(t?.strMealThumb)
-                    .into(binding.imgRandomMeal)
-            }
+    private fun onRandomMealClick() {
+        binding.randomMealCard.setOnClickListener{
+            val intent = Intent(activity, MealActivity::class.java)
+            intent.putExtra(MEAL_ID, randomMeal.idMeal)
+            intent.putExtra(MEAL_NAME, randomMeal.strMeal)
+            intent.putExtra(MEAL_THUMB, randomMeal.strMealThumb)
+            startActivity(intent)
+        }
+    }
 
-        })
+    private fun observeRandomMeal() {
+        homeMvvm.observeRandomMealLiveData().observe(viewLifecycleOwner
+        ) { meal ->
+            Glide.with(this@HomeFragment)
+                .load(meal?.strMealThumb)
+                .into(binding.imgRandomMeal)
+
+            this.randomMeal = meal
+        }
     }
 
 }
